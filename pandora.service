@@ -1,0 +1,11 @@
+[Unit]
+Description=Pandora Service
+After=multi-user.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/pandora/
+ExecStart=/root/pandora/bin/python -m pandora -t token -s
+
+[Install]
+WantedBy=multi-user.target
