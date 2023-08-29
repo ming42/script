@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+
+import json
+import subprocess
+import time
+
+# Set the login endpoint URL
+LOGIN_ENDPOINT = "https://ai-20230626.fakeopen.com/auth/login"
+
+# Read email and password from the input file (EMAIL,PASSWORD)
+with open("account.txt", "r") as input_file:
+    lines = input_file.readlines()
+
+# Initialize the config dictionary
+config = {}
+
+for line in lines:
+    # Extract email and password from the line
+    email, password = line.strip().split(',')
+
+    # Extract username from the email
+    ID = email.split('@')[0]
+
+    print(f"Processing account: {email}")
+
+    # Construct the curl command
+    curl_command = [
+        "curl",
+        "-X", "POST",
+        "-d", f"username={email}&password={password}",
+        LOGIN_ENDPOINT
+    ]
+
+    print("Sending login request...")
+
+    try:
+        # Run the curl command and capture the output
+        response = subprocess.run(curl_command, capture_output=True, text=True)
+        response_data = response.stdout
+    except Exception as e:
+        print(f"Login failed: {e}")
+        continue
+
+    print("Response received.")
+
+    # Parse the JSON response
+    response_json = json.loads(response_data)
+
+    # Extract the Access Token from the response
+    access_token = response_json.get("access_token")
+
+    # Add username and access token to the config dictionary
+    config[ID] = access_token
+
+    # Add a delay of 1 second to avoid rapid requests
+    time.sleep(1)
+
+# Write the config dictionary to a JSON configuration file with formatting
+with open("config.json", "w") as config_file:
+    json.dump(config, config_file, indent=4)  # Use indent parameter for formatting
